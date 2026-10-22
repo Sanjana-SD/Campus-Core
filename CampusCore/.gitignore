@@ -1,0 +1,23 @@
+# Secrets & credentials
+.env
+.env.*
+!.env.example
+config/
+*service-account*.json
+*credentials*.json
+
+# Local data
+*.db
+*.db-journal
+backend/uploads/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+.pytest_cache/
+
+# Node
+node_modules/
+frontend/dist/

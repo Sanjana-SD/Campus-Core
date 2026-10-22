@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: campuscore_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: campuscore
+      POSTGRES_PASSWORD: campuscore_secure_password_2026
+      POSTGRES_DB: campuscore
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campuscore -d campuscore"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: campuscore_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://campuscore:campuscore_secure_password_2026@db:5432/campuscore
+      - GOOGLE_SHEET_ID=1CLlTz9hZ3IdChuTO9gx4Fusf5CspohMhyqn3Pwar_xw
+      - GOOGLE_SHEET_GID=0
+      - INTEGRATION_WEBHOOK_SECRET=campuscore_rfid_sync_token_secure_2026
+      - SECRET_KEY=campuscore_super_secret_jwt_signing_key_production_grade_2026_xyz
+      - COLLEGE_TIMEZONE=Asia/Kolkata
+      - ATTENDANCE_THRESHOLD_PERCENT=75.0
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/uploads:/app/backend/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: campuscore_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  postgres_data:
